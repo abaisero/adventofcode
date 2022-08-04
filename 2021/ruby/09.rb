@@ -1,3 +1,4 @@
+#!/usr/bin/env ruby
 # frozen_string_literal: true
 
 require_relative 'utils'
@@ -43,9 +44,9 @@ end
 
 def traverse(matrix)
   basin_index = 0
-  matrix.each_with_index do |row, i|
-    row.each_with_index do |value, j|
-      if (0..8).include? value
+  matrix.each.with_index do |row, i|
+    row.each.with_index do |value, j|
+      if value.between?(0, 8)
         basin_index -= 1
         traverse_step(matrix, i, j, basin_index)
       end

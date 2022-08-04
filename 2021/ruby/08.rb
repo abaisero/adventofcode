@@ -1,3 +1,4 @@
+#!/usr/bin/env ruby
 # frozen_string_literal: true
 
 def read_data(filename)
@@ -26,9 +27,9 @@ def part2(filename)
     segments = Array.new(7)
 
     digit_counts = d[:digits].join.split('').group_by(&:itself).map { |k, v| [k, v.length] }
-    segments[1] = digit_counts.find { |_k, v| v == 6 }.first
-    segments[4] = digit_counts.find { |_k, v| v == 4 }.first
-    segments[5] = digit_counts.find { |_k, v| v == 9 }.first
+    segments[1] = digit_counts.find { |_, v| v == 6 }.first
+    segments[4] = digit_counts.find { |_, v| v == 4 }.first
+    segments[5] = digit_counts.find { |_, v| v == 9 }.first
 
     digits[1] = d[:digits].find { |digit| digit.length == 2 }.split('').sort.join
     digits[4] = d[:digits].find { |digit| digit.length == 4 }.split('').sort.join
@@ -38,7 +39,7 @@ def part2(filename)
     segments[0] = (digits[7].split('') - digits[1].split('')).first
     segments[2] = (digits[7].split('') - [segments[0], segments[5]]).first
     segments[3] = (digits[4].split('') - [segments[1], segments[2], segments[5]]).first
-    segments[6] = (('a'..'g').to_a - segments).first
+    segments[6] = ('a'.upto('g').to_a - segments).first
 
     get_segment = proc { |i| segments[i] }
     digits[0] = [0, 1, 2, 4, 5, 6].map(&get_segment).sort.join

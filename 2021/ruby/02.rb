@@ -1,42 +1,53 @@
+#!/usr/bin/env ruby
 # frozen_string_literal: true
 
 def read_data(filename)
   File.foreach(filename).map do |line|
-    m = line.strip.match(/^(?<command>\w+)\s+(?<value>\d+)$/)
+    m = line.strip.match(/^(?<command>\w+)\s+(?<x>\d+)$/)
     command = m[:command].to_sym
-    value = m[:value].to_i
-    [command, value]
+    x = m[:x].to_i
+    { command: command, x: x }
   end
+end
+
+def update1(instruction, state)
+  case instruction[:command]
+  when :forward then state[:position] += instruction[:x]
+  when :down then state[:depth] += instruction[:x]
+  when :up then state[:depth] -= instruction[:x]
+  end
+end
+
+def score(state)
+  state[:position] * state[:depth]
 end
 
 def part1(filename)
-  data = read_data filename
-
+  instructions = read_data filename
   state = { position: 0, depth: 0 }
-  data.each do |command, value|
-    case command
-    when :forward then state[:position] += value
-    when :down then state[:depth] += value
-    when :up then state[:depth] -= value
-    end
+  instructions.each do |instruction|
+    update1 instruction, state
   end
-  state[:position] * state[:depth]
+  score state
+end
+
+def update2(instruction, state)
+  case instruction[:command]
+  when :forward
+    state[:position] += instruction[:x]
+    state[:depth] += state[:aim] * instruction[:x]
+  when :down then state[:aim] += instruction[:x]
+  when :up then state[:aim] -= instruction[:x]
+  end
 end
 
 def part2(filename)
-  data = read_data filename
-
+  instructions = read_data filename
   state = { position: 0, depth: 0, aim: 0 }
-  data.each do |command, value|
-    case command
-    when :forward
-      state[:position] += value
-      state[:depth] += state[:aim] * value
-    when :down then state[:aim] += value
-    when :up then state[:aim] -= value
-    end
+  instructions.each do |instruction|
+    update2 instruction, state
   end
-  state[:position] * state[:depth]
+  score state
 end
 
 p part1 '02.example.txt'

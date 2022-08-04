@@ -1,55 +1,70 @@
+#!/usr/bin/env ruby
 # frozen_string_literal: true
+
+require_relative 'utils'
 
 def read_data(filename)
   File.foreach(filename).map do |line|
     m = line.strip.match(/^(?<x1>\d+),(?<y1>\d+) -> (?<x2>\d+),(?<y2>\d+)$/)
-    {
-      vertical: m[:x1] == m[:x2],
-      horizontal: m[:y1] == m[:y2],
-      xs: [m[:x1].to_i, m[:x2].to_i],
-      ys: [m[:y1].to_i, m[:y2].to_i]
-    }
+    from = [m[:x1].to_i, m[:y1].to_i]
+    to = [m[:x2].to_i, m[:y2].to_i]
+    [from, to]
   end
 end
 
-def bidirectional_range(range)
-  # takes a range and inverts it if empty
-  range.first <= range.last ? range : range.last..range.first
+def horizontal?(vent)
+  vent[0][1] == vent[1][1]
+end
+
+def vertical?(vent)
+  vent[0][0] == vent[1][0]
+end
+
+def diagonal?(vent)
+  !horizontal?(vent) && !vertical?(vent)
+end
+
+def next_coordinate(from, to)
+  # returns the next coordinate from x to y
+  [
+    next_value(from[0], to[0]),
+    next_value(from[1], to[1])
+  ]
 end
 
 def compute_coordinates(vent)
-  xs = vent[:xs]
-  ys = vent[:ys]
-
-  return xs.min.upto(xs.max).map { |x| [x, ys.sample] } if vent[:horizontal]
-  return ys.min.upto(ys.max).map { |y| [xs.sample, y] } if vent[:vertical]
-
-  xrange = bidirectional_range(xs.first..xs.last)
-  yrange = bidirectional_range(ys.first..ys.last)
-  xrange.zip(yrange).to_a
+  coordinates = [vent[0]]
+  coordinates << next_coordinate(coordinates.last, vent[1]) until coordinates.last == vent[1]
+  coordinates
 end
 
-def count_vent_overlaps(vents)
-  coordinates = vents.map { |vent| compute_coordinates vent }
-  coordinates.flatten! 1
+def make_field(vents)
+  nrows = vents.flatten(1).map { |x, _| x }.max + 1
+  ncols = vents.flatten(1).map { |_, y| y }.max + 1
+  field = make_matrix(nrows, ncols) { 0 }
 
-  xmax = coordinates.map(&:first).max
-  ymax = coordinates.map(&:last).max
-  field = Array.new(ymax + 1) { Array.new(xmax + 1, 0) }
+  coordinates = vents.flat_map { |vent| compute_coordinates(vent) }
+  coordinates.each do |x, y|
+    field[y][x] += 1
+  end
 
-  coordinates.each { |x, y| field[y][x] += 1 }
-  field.flatten.count { |value| value >= 2 }
+  field
+end
+
+def count_overlaps(vents)
+  field = make_field(vents)
+  field.flatten.count { |n| n >= 2 }
 end
 
 def part1(filename)
   vents = read_data filename
-  vents = vents.select { |vent| vent[:horizontal] or vent[:vertical] }
-  count_vent_overlaps vents
+  vents = vents.reject { |vent| diagonal? vent }
+  count_overlaps vents
 end
 
 def part2(filename)
   vents = read_data filename
-  count_vent_overlaps vents
+  count_overlaps vents
 end
 
 p part1 '05.example.txt'

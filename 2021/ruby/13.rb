@@ -1,4 +1,7 @@
+#!/usr/bin/env ruby
 # frozen_string_literal: true
+
+require_relative 'utils'
 
 def read_data(filename)
   lines = File.foreach(filename).map(&:strip)
@@ -27,7 +30,7 @@ end
 def print_dots(dots)
   nrows = dots.map { |_, y| y }.max + 1
   ncols = dots.map { |x, _| x }.max + 1
-  matrix = Array.new(nrows) { Array.new(ncols, ' ') }
+  matrix = make_matrix(nrows, ncols) { ' ' }
   dots.each do |x, y|
     matrix[y][x] = '#'
   end

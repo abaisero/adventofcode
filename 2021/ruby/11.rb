@@ -1,3 +1,4 @@
+#!/usr/bin/env ruby
 # frozen_string_literal: true
 
 require_relative 'utils'
@@ -41,8 +42,8 @@ def flash(energies, index_i, index_j)
 end
 
 def propagate_flashes(energies)
-  energies.each_with_index do |row, i|
-    row.each_with_index do |energy, j|
+  energies.each.with_index do |row, i|
+    row.each.with_index do |energy, j|
       next if energy.nil?
 
       flash(energies, i, j) if energy > 9
@@ -67,7 +68,7 @@ def part2(filename)
   energies = read_data filename
   goal_flashes = energies.length * energies.first.length
 
-  (1..Float::INFINITY).find do
+  (1...).find do
     num_flashes = step energies
     num_flashes == goal_flashes
   end

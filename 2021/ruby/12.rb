@@ -1,3 +1,4 @@
+#!/usr/bin/env ruby
 # frozen_string_literal: true
 
 def read_data(filename)
@@ -13,11 +14,11 @@ def end?(cave)
 end
 
 def small?(cave)
-  ('a'..'z').include? cave[0]
+  cave[0].between? 'a', 'z'
 end
 
 def big?(cave)
-  ('A'..'Z').include? cave[0]
+  cave[0].between? 'A', 'Z'
 end
 
 def add_link(cavehash, from, to)
@@ -30,8 +31,8 @@ end
 def make_cavehash(connections)
   cavehash = {}
   connections.each do |from, to|
-    add_link(cavehash, from, to)
-    add_link(cavehash, to, from)
+    add_link cavehash, from, to
+    add_link cavehash, to, from
   end
   cavehash
 end
@@ -45,7 +46,7 @@ def find_paths1(cavehash, path = ['start'], paths = [])
   cavehash[path.last].each do |cave|
     next if small?(cave) && path.include?(cave)
 
-    find_paths1(cavehash, path + [cave], paths)
+    find_paths1 cavehash, path + [cave], paths
   end
 
   paths
@@ -72,7 +73,7 @@ def find_paths2(cavehash, path = ['start'], paths = [])
   cavehash[path.last].each do |cave|
     next if small?(cave) && path.include?(cave) && already_double_visited_small(path)
 
-    find_paths2(cavehash, path + [cave], paths)
+    find_paths2 cavehash, path + [cave], paths
   end
 
   paths
