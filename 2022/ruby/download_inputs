@@ -1,0 +1,19 @@
+#!/bin/bash
+
+year=$(basename $(dirname $PWD))
+
+for filename in $(find . -name '[0-9][0-9].rb' | sort); do
+  day=$(basename $filename .rb)
+  input=$day.txt
+
+  echo -n "downloading $input ... "
+  if [ -f "$input" ]; then
+    echo "already exists"
+  else
+    aocd $day $year > $input
+    echo "DONE!"
+  fi
+done
+
+
+exit 0
