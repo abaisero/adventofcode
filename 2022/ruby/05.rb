@@ -4,7 +4,7 @@
 require 'stringio'
 require_relative 'test'
 
-def read_data_stacks_line(stacks, line)
+def parse_data_stacks_line(stacks, line)
   crate_indices = (1...line.length).step(4)
   crates = crate_indices.map { |i| line[i] }
   crates_with_indices = crates.each.with_index(1).reject { |crate, _index| crate == ' ' }
@@ -15,27 +15,27 @@ def read_data_stacks_line(stacks, line)
   end
 end
 
-def read_data_stacks(io)
+def parse_data_stacks(io)
   stacks = {}
   io.each do |line|
     next if /(\s+\d+)+/.match? line
-    break if line.strip.empty?
+    break if line.chomp.empty?
 
-    read_data_stacks_line(stacks, line)
+    parse_data_stacks_line(stacks, line)
   end
   stacks
 end
 
-def read_data_movements(io)
+def parse_data_movements(io)
   io.map do |line|
-    match = /^move (?<num>\d+) from (?<from>\d+) to (?<to>\d+)$/.match line
-    [match['num'].to_i, match['from'].to_i, match['to'].to_i]
+    match = line.match(/^move (\d+) from (\d+) to (\d+)$/)
+    match.captures.map(&:to_i)
   end
 end
 
-def read_data(io)
-  stacks = read_data_stacks io
-  movements = read_data_movements io
+def parse_data(io)
+  stacks = parse_data_stacks io
+  movements = parse_data_movements io
   [stacks, movements]
 end
 
@@ -52,7 +52,7 @@ def get_top_crates(stacks)
 end
 
 def part1(io)
-  stacks, movements = read_data io
+  stacks, movements = parse_data io
   move_crates_part1 stacks, movements
   get_top_crates stacks
 end
@@ -64,12 +64,12 @@ def move_crates_part2(stacks, movements)
 end
 
 def part2(io)
-  stacks, movements = read_data io
+  stacks, movements = parse_data io
   move_crates_part2 stacks, movements
   get_top_crates stacks
 end
 
-example = <<~EXAMPLE
+example = <<~EOF
       [D]
   [N] [C]
   [Z] [M] [P]
@@ -79,7 +79,7 @@ example = <<~EXAMPLE
   move 3 from 1 to 3
   move 2 from 2 to 1
   move 1 from 1 to 2
-EXAMPLE
+EOF
 test_example StringIO.open(example) { |io| part1 io }, 'CMZ'
 test_example StringIO.open(example) { |io| part2 io }, 'MCD'
 

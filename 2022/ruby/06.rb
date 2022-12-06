@@ -4,8 +4,8 @@
 require 'stringio'
 require_relative 'test'
 
-def read_data(io)
-  io.read.strip
+def parse_data(io)
+  io.read.chomp
 end
 
 def find_first_uniq_index(signal, length)
@@ -13,12 +13,12 @@ def find_first_uniq_index(signal, length)
 end
 
 def part1(io)
-  signal = read_data io
+  signal = parse_data io
   find_first_uniq_index signal, 4
 end
 
 def part2(io)
-  signal = read_data io
+  signal = parse_data io
   find_first_uniq_index signal, 14
 end
 

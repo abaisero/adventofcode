@@ -4,8 +4,8 @@
 require 'stringio'
 require_relative 'test'
 
-def read_data(io)
-  io.each.map { |line| line.split.map(&:to_sym) }
+def parse_data(io)
+  io.map { |line| line.split.map(&:to_sym) }
 end
 
 def score_shape(_x, y)
@@ -36,7 +36,7 @@ def convert_strategy_to_moves_part1(strategy)
 end
 
 def part1(io)
-  strategy = read_data io
+  strategy = parse_data io
   moves = convert_strategy_to_moves_part1 strategy
   moves.map { |x, y| score x, y }.sum
 end
@@ -57,16 +57,16 @@ def convert_strategy_to_moves_part2(strategy)
 end
 
 def part2(io)
-  strategy = read_data io
+  strategy = parse_data io
   moves = convert_strategy_to_moves_part2 strategy
   moves.map { |x, y| score x, y }.sum
 end
 
-example = <<~EXAMPLE
+example = <<~EOF
   A Y
   B X
   C Z
-EXAMPLE
+EOF
 test_example StringIO.open(example) { |io| part1 io }, 15
 test_example StringIO.open(example) { |io| part2 io }, 12
 

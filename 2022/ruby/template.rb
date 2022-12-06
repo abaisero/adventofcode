@@ -4,20 +4,20 @@
 require 'stringio'
 require_relative 'test'
 
-def read_data(io)
-  io.each.map(&:strip)
+def parse_data(io)
+  io.map(&:chomp)
 end
 
 def part1(io)
-  read_data io
+  parse_data io
 end
 
 def part2(io)
-  read_data io
+  parse_data io
 end
 
-example = <<~EXAMPLE
-EXAMPLE
+example = <<~EOF
+EOF
 test_example StringIO.open(example) { |io| part1 io }, nil
 test_example StringIO.open(example) { |io| part2 io }, nil
 

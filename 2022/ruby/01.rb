@@ -4,7 +4,7 @@
 require 'stringio'
 require_relative 'test'
 
-def read_data(io)
+def parse_data(io)
   inventories = [[]]
   io.each do |line|
     case line
@@ -22,16 +22,16 @@ def max_k_calories(inventories, k)
 end
 
 def part1(io)
-  inventories = read_data io
+  inventories = parse_data io
   max_k_calories inventories, 1
 end
 
 def part2(io)
-  inventories = read_data io
+  inventories = parse_data io
   max_k_calories inventories, 3
 end
 
-example = <<~EXAMPLE
+example = <<~EOF
   1000
   2000
   3000
@@ -46,7 +46,7 @@ example = <<~EXAMPLE
   9000
 
   10000
-EXAMPLE
+EOF
 test_example StringIO.open(example) { |io| part1 io }, 24_000
 test_example StringIO.open(example) { |io| part2 io }, 45_000
 
