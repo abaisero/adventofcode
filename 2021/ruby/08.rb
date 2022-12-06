@@ -1,8 +1,11 @@
 #!/usr/bin/env ruby
 # frozen_string_literal: true
 
-def read_data(filename)
-  File.foreach(filename).map do |line|
+require 'stringio'
+require_relative 'test'
+
+def parse_data(io)
+  io.map do |line|
     line = line.split('|')
     {
       digits: line[0].split,
@@ -11,16 +14,16 @@ def read_data(filename)
   end
 end
 
-def part1(filename)
-  data = read_data filename
+def part1(io)
+  data = parse_data io
 
   # number of segments for digits 1, 4, 7, 8 (which respectively have 2, 4, 3, 7 segments)
   lengths = [2, 4, 3, 7]
   data.map { |d| d[:code] }.flatten.map(&:length).count { |l| lengths.include? l }
 end
 
-def part2(filename)
-  data = read_data filename
+def part2(io)
+  data = parse_data io
 
   data.map do |d|
     digits = Array.new(10)
@@ -54,7 +57,21 @@ def part2(filename)
   end.sum
 end
 
-p part1 '08.example.txt'
-p part1 '08.txt'
-p part2 '08.example.txt'
-p part2 '08.txt'
+example = <<~EOF
+  be cfbegad cbdgef fgaecd cgeb fdcge agebfd fecdb fabcd edb | fdgacbe cefdb cefbgd gcbe
+  edbfga begcd cbg gc gcadebf fbgde acbgfd abcde gfcbed gfec | fcgedb cgb dgebacf gc
+  fgaebd cg bdaec gdafb agbcfd gdcbef bgcad gfac gcb cdgabef | cg cg fdcagb cbg
+  fbegcd cbd adcefb dageb afcb bc aefdc ecdab fgdeca fcdbega | efabcd cedba gadfec cb
+  aecbfdg fbg gf bafeg dbefa fcge gcbea fcaegb dgceab fcbdga | gecf egdcabf bgf bfgea
+  fgeab ca afcebg bdacfeg cfaedg gcfdb baec bfadeg bafgc acf | gebdcfa ecba ca fadegcb
+  dbcfg fgd bdegcaf fgec aegbdf ecdfab fbedc dacgb gdcebf gf | cefg dcbef fcge gbcadfe
+  bdfegc cbegaf gecbf dfcage bdacg ed bedf ced adcbefg gebcd | ed bcgafe cdgba cbgef
+  egadfb cdbfeg cegd fecab cgb gbdefca cg fgcdab egfdb bfceg | gbdfcae bgc cg cgb
+  gcafb gcf dcaebfg ecagb gf abcdeg gaef cafbge fdbac fegbdc | fgae cfgab fg bagce
+EOF
+test_example StringIO.open(example) { |io| part1 io }, 26
+test_example StringIO.open(example) { |io| part2 io }, 61_229
+
+input = "#{File.basename(__FILE__, '.rb')}.txt"
+puts File.open(input) { |io| part1 io }
+puts File.open(input) { |io| part2 io }

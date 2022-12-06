@@ -1,10 +1,12 @@
 #!/usr/bin/env ruby
 # frozen_string_literal: true
 
+require 'stringio'
+require_relative 'test'
 require_relative 'utils'
 
-def read_data(filename)
-  File.foreach(filename).map { |line| line.strip.split('').map(&:to_i) }
+def parse_data(io)
+  io.map { |line| line.chomp.each_char.map(&:to_i) }
 end
 
 def matrix_lowpoints(matrix)
@@ -20,8 +22,8 @@ def array_lowpoints(array)
   [array[0] < array[1]] + array.each_cons(3).map { |x, y, z| x > y and y < z } + [array[-2] > array[-1]]
 end
 
-def part1(filename)
-  matrix = read_data filename
+def part1(io)
+  matrix = parse_data io
   lowpoints = matrix_lowpoints matrix
   matrix.flatten.zip(lowpoints.flatten).select { |_d, l| l }.map { |d, _l| d + 1 }.sum
 end
@@ -54,15 +56,24 @@ def traverse(matrix)
   end
 end
 
-def part2(filename)
-  matrix = read_data filename
+def part2(io)
+  matrix = parse_data io
   traverse matrix
   basins = matrix.flatten.reject(&:positive?).group_by(&:itself)
   basin_sizes = basins.map { |_k, v| v.length }.sort
   basin_sizes[-3] * basin_sizes[-2] * basin_sizes[-1]
 end
 
-p part1 '09.example.txt'
-p part1 '09.txt'
-p part2 '09.example.txt'
-p part2 '09.txt'
+example = <<~EOF
+  2199943210
+  3987894921
+  9856789892
+  8767896789
+  9899965678
+EOF
+test_example StringIO.open(example) { |io| part1 io }, 15
+test_example StringIO.open(example) { |io| part2 io }, 1134
+
+input = "#{File.basename(__FILE__, '.rb')}.txt"
+puts File.open(input) { |io| part1 io }
+puts File.open(input) { |io| part2 io }

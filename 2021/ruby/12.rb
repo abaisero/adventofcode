@@ -1,8 +1,11 @@
 #!/usr/bin/env ruby
 # frozen_string_literal: true
 
-def read_data(filename)
-  File.foreach(filename).map { |line| line.strip.split('-') }
+require 'stringio'
+require_relative 'test'
+
+def parse_data(io)
+  io.map { |line| line.chomp.split('-') }
 end
 
 def start?(cave)
@@ -52,8 +55,8 @@ def find_paths1(cavehash, path = ['start'], paths = [])
   paths
 end
 
-def part1(filename)
-  connections = read_data filename
+def part1(io)
+  connections = parse_data io
   cavehash = make_cavehash connections
   paths = find_paths1 cavehash
   paths.length
@@ -79,14 +82,25 @@ def find_paths2(cavehash, path = ['start'], paths = [])
   paths
 end
 
-def part2(filename)
-  connections = read_data filename
+def part2(io)
+  connections = parse_data io
   cavehash = make_cavehash connections
   paths = find_paths2 cavehash
   paths.length
 end
 
-p part1 '12.example.txt'
-p part1 '12.txt'
-p part2 '12.example.txt'
-p part2 '12.txt'
+example = <<~EOF
+  start-A
+  start-b
+  A-c
+  A-b
+  b-d
+  A-end
+  b-end
+EOF
+test_example StringIO.open(example) { |io| part1 io }, 10
+test_example StringIO.open(example) { |io| part2 io }, 36
+
+input = "#{File.basename(__FILE__, '.rb')}.txt"
+puts File.open(input) { |io| part1 io }
+puts File.open(input) { |io| part2 io }

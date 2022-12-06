@@ -1,9 +1,12 @@
 #!/usr/bin/env ruby
 # frozen_string_literal: true
 
+require 'stringio'
+require_relative 'test'
+
 PADDING = '.'
-def read_data(filename)
-  lines = File.foreach(filename).map(&:strip)
+def parse_data(io)
+  lines = io.map(&:chomp)
   template = "#{PADDING}#{lines.first}#{PADDING}".split('')
   rules = lines[2..].map { |line| [line[0], line[1], line[-1]] }
   [template, rules]
@@ -34,21 +37,43 @@ def score(paircounts)
   counts.max - counts.min
 end
 
-def part1(filename)
-  template, rules = read_data filename
+def part1(io)
+  template, rules = parse_data io
   paircounts = make_paircounts(template, rules)
   10.times { run_step(paircounts, rules) }
   score paircounts
 end
 
-def part2(filename)
-  template, rules = read_data filename
+def part2(io)
+  template, rules = parse_data io
   paircounts = make_paircounts(template, rules)
   40.times { run_step(paircounts, rules) }
   score paircounts
 end
 
-p part1 '14.example.txt'
-p part1 '14.txt'
-p part2 '14.example.txt'
-p part2 '14.txt'
+example = <<~EOF
+  NNCB
+
+  CH -> B
+  HH -> N
+  CB -> H
+  NH -> C
+  HB -> C
+  HC -> B
+  HN -> C
+  NN -> C
+  BH -> H
+  NC -> B
+  NB -> B
+  BN -> B
+  BB -> N
+  BC -> B
+  CC -> N
+  CN -> C
+EOF
+test_example StringIO.open(example) { |io| part1 io }, 1588
+test_example StringIO.open(example) { |io| part2 io }, 2_188_189_693_529
+
+input = "#{File.basename(__FILE__, '.rb')}.txt"
+puts File.open(input) { |io| part1 io }
+puts File.open(input) { |io| part2 io }

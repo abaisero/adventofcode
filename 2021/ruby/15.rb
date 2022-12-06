@@ -2,10 +2,12 @@
 # frozen_string_literal: true
 
 require 'set'
+require 'stringio'
+require_relative 'test'
 require_relative 'utils'
 
-def read_data(filename)
-  File.foreach(filename).map { |line| line.strip.split('').map(&:to_i) }
+def parse_data(io)
+  io.map { |line| line.chomp.each_char.map(&:to_i) }
 end
 
 def heuristic(matrix, index_i, index_j)
@@ -71,8 +73,8 @@ def pathrisk(risks, path)
   path[1...].map { |i, j| risks[i][j] }.sum
 end
 
-def part1(filename)
-  risks = read_data filename
+def part1(io)
+  risks = parse_data io
   path = astar risks
   # pp_path risks, path
   pathrisk risks, path
@@ -91,15 +93,29 @@ def full_riskmap(risks)
   end
 end
 
-def part2(filename)
-  risks = read_data filename
+def part2(io)
+  risks = parse_data io
   risks = full_riskmap risks
   path = astar risks
   # pp_path risks, path
   pathrisk risks, path
 end
 
-p part1 '15.example.txt'
-p part1 '15.txt'
-p part2 '15.example.txt'
-p part2 '15.txt'
+example = <<~EOF
+  1163751742
+  1381373672
+  2136511328
+  3694931569
+  7463417111
+  1319128137
+  1359912421
+  3125421639
+  1293138521
+  2311944581
+EOF
+test_example StringIO.open(example) { |io| part1 io }, 40
+test_example StringIO.open(example) { |io| part2 io }, 315
+
+input = "#{File.basename(__FILE__, '.rb')}.txt"
+puts File.open(input) { |io| part1 io }
+puts File.open(input) { |io| part2 io }

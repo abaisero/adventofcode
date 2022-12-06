@@ -1,8 +1,11 @@
 #!/usr/bin/env ruby
 # frozen_string_literal: true
 
-def read_data(filename)
-  File.foreach(filename).map(&:strip)
+require 'stringio'
+require_relative 'test'
+
+def parse_data(io)
+  io.read.chomp
 end
 
 # receives a bitstring, and provides a take to parse it bit-by-bit
@@ -92,10 +95,10 @@ def compute_version(packet)
   packet[:version] + subversions.sum
 end
 
-def part1(filename)
-  hexstrings = read_data filename
-  packets = hexstrings.map { |hexstring| hexstring_to_packet(hexstring) }
-  packets.map { |packet| compute_version packet }
+def part1(io)
+  hexstring = parse_data io
+  packet = hexstring_to_packet hexstring
+  compute_version packet
 end
 
 def compute_value(packet)
@@ -113,13 +116,72 @@ def compute_value(packet)
   end
 end
 
-def part2(filename)
-  hexstrings = read_data filename
-  packets = hexstrings.map { |hexstring| hexstring_to_packet hexstring }
-  packets.map { |packet| compute_value packet }
+def part2(io)
+  hexstring = parse_data io
+  packet = hexstring_to_packet hexstring
+  compute_value packet
 end
 
-p part1 '16.example.txt'
-p part1 '16.txt'
-p part2 '16.example.txt'
-p part2 '16.txt'
+example = 'D2FE28'
+test_example StringIO.open(example) { |io| part1 io }, 6
+test_example StringIO.open(example) { |io| part2 io }, 2021
+
+example = '38006F45291200'
+test_example StringIO.open(example) { |io| part1 io }, 9
+test_example StringIO.open(example) { |io| part2 io }, 1
+
+example = 'EE00D40C823060'
+test_example StringIO.open(example) { |io| part1 io }, 14
+test_example StringIO.open(example) { |io| part2 io }, 3
+
+example = '8A004A801A8002F478'
+test_example StringIO.open(example) { |io| part1 io }, 16
+test_example StringIO.open(example) { |io| part2 io }, 15
+
+example = '620080001611562C8802118E34'
+test_example StringIO.open(example) { |io| part1 io }, 12
+test_example StringIO.open(example) { |io| part2 io }, 46
+
+example = 'C0015000016115A2E0802F182340'
+test_example StringIO.open(example) { |io| part1 io }, 23
+test_example StringIO.open(example) { |io| part2 io }, 46
+
+example = 'A0016C880162017C3686B18A3D4780'
+test_example StringIO.open(example) { |io| part1 io }, 31
+test_example StringIO.open(example) { |io| part2 io }, 54
+
+example = 'C200B40A82'
+test_example StringIO.open(example) { |io| part1 io }, 14
+test_example StringIO.open(example) { |io| part2 io }, 3
+
+example = '04005AC33890'
+test_example StringIO.open(example) { |io| part1 io }, 8
+test_example StringIO.open(example) { |io| part2 io }, 54
+
+example = '880086C3E88112'
+test_example StringIO.open(example) { |io| part1 io }, 15
+test_example StringIO.open(example) { |io| part2 io }, 7
+
+example = 'CE00C43D881120'
+test_example StringIO.open(example) { |io| part1 io }, 11
+test_example StringIO.open(example) { |io| part2 io }, 9
+
+example = 'D8005AC2A8F0'
+test_example StringIO.open(example) { |io| part1 io }, 13
+test_example StringIO.open(example) { |io| part2 io }, 1
+
+example = 'F600BC2D8F'
+test_example StringIO.open(example) { |io| part1 io }, 19
+test_example StringIO.open(example) { |io| part2 io }, 0
+
+example = '9C005AC2F8F0'
+test_example StringIO.open(example) { |io| part1 io }, 16
+test_example StringIO.open(example) { |io| part2 io }, 0
+
+example = '9C0141080250320F1802104A08'
+test_example StringIO.open(example) { |io| part1 io }, 20
+test_example StringIO.open(example) { |io| part2 io }, 1
+
+input = "#{File.basename(__FILE__, '.rb')}.txt"
+puts File.open(input) { |io| part1 io }
+puts File.open(input) { |io| part2 io }

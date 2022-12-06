@@ -1,8 +1,11 @@
 #!/usr/bin/env ruby
 # frozen_string_literal: true
 
-def read_data(filename)
-  File.foreach(filename).map { |line| line.strip.split('') }
+require 'stringio'
+require_relative 'test'
+
+def parse_data(io)
+  io.map { |line| line.chomp.chars }
 end
 
 def process_line(line)
@@ -24,8 +27,8 @@ def process_line(line)
   { stack: stack, value: v }
 end
 
-def part1(filename)
-  data = read_data filename
+def part1(io)
+  data = parse_data io
   scorehash = { ')' => 3, ']' => 57, '}' => 1197, '>' => 25_137 }
   keys = data.map { |line| process_line(line)[:value] }.compact
   keys.map { |k| scorehash[k] }.sum
@@ -38,14 +41,28 @@ def compute_score(stack)
   score
 end
 
-def part2(filename)
-  data = read_data filename
+def part2(io)
+  data = parse_data io
   stacks = data.map { |line| process_line(line) }.select { |r| r[:value].nil? }.map { |r| r[:stack] }
   scores = stacks.map { |stack| compute_score stack }.sort
   scores[scores.length / 2]
 end
 
-p part1 '10.example.txt'
-p part1 '10.txt'
-p part2 '10.example.txt'
-p part2 '10.txt'
+example = <<~EOF
+  [({(<(())[]>[[{[]{<()<>>
+  [(()[<>])]({[<{<<[]>>(
+  {([(<{}[<>[]}>{[]{[(<()>
+  (((({<>}<{<{<>}{[]{[]{}
+  [[<[([]))<([[{}[[()]]]
+  [{[{({}]{}}([{[{{{}}([]
+  {<[[]]>}<{[{[{[]{()[[[]
+  [<(<(<(<{}))><([]([]()
+  <{([([[(<>()){}]>(<<{{
+  <{([{{}}[<[[[<>{}]]]>[]]
+EOF
+test_example StringIO.open(example) { |io| part1 io }, 26_397
+test_example StringIO.open(example) { |io| part2 io }, 288_957
+
+input = "#{File.basename(__FILE__, '.rb')}.txt"
+puts File.open(input) { |io| part1 io }
+puts File.open(input) { |io| part2 io }

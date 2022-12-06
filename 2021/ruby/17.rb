@@ -1,13 +1,15 @@
 #!/usr/bin/env ruby
 # frozen_string_literal: true
 
+require 'stringio'
+require_relative 'test'
 require_relative 'utils'
 
-def read_data(filename)
-  text = File.open(filename) { |file| file.read.strip }
-  m = text.match(/^target area: x=(?<x0>-?\d+)..(?<x1>-?\d+), y=(?<y0>-?\d+)..(?<y1>-?\d+)$/)
-  xrange = (m['x0'].to_i)..(m['x1'].to_i)
-  yrange = (m['y0'].to_i)..(m['y1'].to_i)
+def parse_data(io)
+  text = io.read.chomp
+  match = text.match(/^target area: x=(?<x0>-?\d+)..(?<x1>-?\d+), y=(?<y0>-?\d+)..(?<y1>-?\d+)$/)
+  xrange = (match['x0'].to_i)..(match['x1'].to_i)
+  yrange = (match['y0'].to_i)..(match['y1'].to_i)
   { xrange: xrange, yrange: yrange }
 end
 
@@ -77,8 +79,8 @@ def find_style_shot(target)
   shots.find { |shot| hits_target? target, shot }
 end
 
-def part1(filename)
-  target = read_data filename
+def part1(io)
+  target = parse_data io
   shot = find_style_shot target
   compute_max_y shot
 end
@@ -91,13 +93,16 @@ def find_shots(target)
   shots.select { |shot| hits_target? target, shot }
 end
 
-def part2(filename)
-  target = read_data filename
+def part2(io)
+  target = parse_data io
   shots = find_shots target
   shots.count
 end
 
-p part1 '17.example.txt'
-p part1 '17.txt'
-p part2 '17.example.txt'
-p part2 '17.txt'
+example = 'target area: x=20..30, y=-10..-5'
+test_example StringIO.open(example) { |io| part1 io }, 45
+test_example StringIO.open(example) { |io| part2 io }, 112
+
+input = "#{File.basename(__FILE__, '.rb')}.txt"
+puts File.open(input) { |io| part1 io }
+puts File.open(input) { |io| part2 io }

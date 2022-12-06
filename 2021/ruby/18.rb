@@ -1,7 +1,9 @@
 #!/usr/bin/env ruby
 # frozen_string_literal: true
 
+require 'stringio'
 require 'yaml'
+require_relative 'test'
 
 # A module to handle multi-index operations for nested arrays
 module Mindex
@@ -86,8 +88,8 @@ module Mindex
   end
 end
 
-def read_data(filename)
-  File.foreach(filename).map { |line| YAML.safe_load line.strip }
+def parse_data(io)
+  io.map { |line| YAML.safe_load line.chomp }
 end
 
 def deepcopy(object)
@@ -152,20 +154,34 @@ def magnitude(number)
   end
 end
 
-def part1(filename)
-  numbers = read_data filename
+def part1(io)
+  numbers = parse_data io
   number = numbers.reduce { |number1, number2| addition number1, number2 }
   magnitude number
 end
 
-def part2(filename)
-  numbers = read_data filename
+def part2(io)
+  numbers = parse_data io
   numbers = numbers.product(numbers).map { |number1, number2| addition number1, number2 }
   magnitudes = numbers.map { |number| magnitude number }
   magnitudes.max
 end
 
-p part1 '18.example.txt'
-p part1 '18.txt'
-p part2 '18.example.txt'
-p part2 '18.txt'
+example = <<~EOF
+  [[[0,[5,8]],[[1,7],[9,6]]],[[4,[1,2]],[[1,4],2]]]
+  [[[5,[2,8]],4],[5,[[9,9],0]]]
+  [6,[[[6,2],[5,6]],[[7,6],[4,7]]]]
+  [[[6,[0,7]],[0,9]],[4,[9,[9,0]]]]
+  [[[7,[6,4]],[3,[1,3]]],[[[5,5],1],9]]
+  [[6,[[7,3],[3,2]]],[[[3,8],[5,7]],4]]
+  [[[[5,4],[7,7]],8],[[8,3],8]]
+  [[9,3],[[9,9],[6,[4,9]]]]
+  [[2,[[7,7],7]],[[5,8],[[9,3],[0,2]]]]
+  [[[[5,2],5],[8,[3,7]]],[[5,[7,5]],[4,4]]]
+EOF
+test_example StringIO.open(example) { |io| part1 io }, 4140
+test_example StringIO.open(example) { |io| part2 io }, 3993
+
+input = "#{File.basename(__FILE__, '.rb')}.txt"
+puts File.open(input) { |io| part1 io }
+puts File.open(input) { |io| part2 io }

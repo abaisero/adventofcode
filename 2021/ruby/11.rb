@@ -1,10 +1,12 @@
 #!/usr/bin/env ruby
 # frozen_string_literal: true
 
+require 'stringio'
+require_relative 'test'
 require_relative 'utils'
 
-def read_data(filename)
-  File.foreach(filename).map { |line| line.strip.split('').map(&:to_i) }
+def parse_data(io)
+  io.map { |line| line.chomp.each_char.map(&:to_i) }
 end
 
 def increase_energies(matrix)
@@ -59,13 +61,13 @@ def step(energies)
   num_flashes
 end
 
-def part1(filename)
-  energies = read_data filename
+def part1(io)
+  energies = parse_data io
   100.times.map { step energies }.sum
 end
 
-def part2(filename)
-  energies = read_data filename
+def part2(io)
+  energies = parse_data io
   goal_flashes = energies.length * energies.first.length
 
   (1...).find do
@@ -74,7 +76,21 @@ def part2(filename)
   end
 end
 
-p part1 '11.example.txt'
-p part1 '11.txt'
-p part2 '11.example.txt'
-p part2 '11.txt'
+example = <<~EOF
+  5483143223
+  2745854711
+  5264556173
+  6141336146
+  6357385478
+  4167524645
+  2176841721
+  6882881134
+  4846848554
+  5283751526
+EOF
+test_example StringIO.open(example) { |io| part1 io }, 1656
+test_example StringIO.open(example) { |io| part2 io }, 195
+
+input = "#{File.basename(__FILE__, '.rb')}.txt"
+puts File.open(input) { |io| part1 io }
+puts File.open(input) { |io| part2 io }

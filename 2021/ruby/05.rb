@@ -1,14 +1,14 @@
 #!/usr/bin/env ruby
 # frozen_string_literal: true
 
+require 'stringio'
+require_relative 'test'
 require_relative 'utils'
 
-def read_data(filename)
-  File.foreach(filename).map do |line|
-    m = line.strip.match(/^(?<x1>\d+),(?<y1>\d+) -> (?<x2>\d+),(?<y2>\d+)$/)
-    from = [m[:x1].to_i, m[:y1].to_i]
-    to = [m[:x2].to_i, m[:y2].to_i]
-    [from, to]
+def parse_data(io)
+  io.map do |line|
+    match = line.match(/^(\d+),(\d+) -> (\d+),(\d+)$/)
+    match.captures.map(&:to_i).each_slice(2).to_a
   end
 end
 
@@ -56,18 +56,32 @@ def count_overlaps(vents)
   field.flatten.count { |n| n >= 2 }
 end
 
-def part1(filename)
-  vents = read_data filename
+def part1(io)
+  vents = parse_data io
   vents = vents.reject { |vent| diagonal? vent }
   count_overlaps vents
 end
 
-def part2(filename)
-  vents = read_data filename
+def part2(io)
+  vents = parse_data io
   count_overlaps vents
 end
 
-p part1 '05.example.txt'
-p part1 '05.txt'
-p part2 '05.example.txt'
-p part2 '05.txt'
+example = <<~EOF
+  0,9 -> 5,9
+  8,0 -> 0,8
+  9,4 -> 3,4
+  2,2 -> 2,1
+  7,0 -> 7,4
+  6,4 -> 2,0
+  0,9 -> 2,9
+  3,4 -> 1,4
+  0,0 -> 8,8
+  5,5 -> 8,2
+EOF
+test_example StringIO.open(example) { |io| part1 io }, 5
+test_example StringIO.open(example) { |io| part2 io }, 12
+
+input = "#{File.basename(__FILE__, '.rb')}.txt"
+puts File.open(input) { |io| part1 io }
+puts File.open(input) { |io| part2 io }
