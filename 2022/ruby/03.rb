@@ -2,8 +2,7 @@
 # frozen_string_literal: true
 
 require 'stringio'
-require 'test/unit/assertions'
-include Test::Unit::Assertions
+require_relative 'test'
 
 def read_data(io)
   io.each.map(&:strip)
@@ -37,16 +36,17 @@ def part2(io)
   badges.map { |badge| compute_priority badge }.sum
 end
 
-example = StringIO.open \
-  "vJrwpWtwJgWrhcsFMMfFFhFp
-jqHRNqRjqzjGDLGLrsFMfFZSrLrFZsSL
-PmmdzqPrVvPwwTWBwg
-wMqvLMZHhHMvwLHjbvcjnnSBnvTQFn
-ttgJtRGJQctTZtZT
-CrZsJsPPZsGzwwsLwLmpwMDw"
-assert_equal part1(example), 157
-example.rewind
-assert_equal part2(example), 70
+example = <<~EXAMPLE
+  vJrwpWtwJgWrhcsFMMfFFhFp
+  jqHRNqRjqzjGDLGLrsFMfFZSrLrFZsSL
+  PmmdzqPrVvPwwTWBwg
+  wMqvLMZHhHMvwLHjbvcjnnSBnvTQFn
+  ttgJtRGJQctTZtZT
+  CrZsJsPPZsGzwwsLwLmpwMDw
+EXAMPLE
+test_example StringIO.open(example) { |io| part1 io }, 157
+test_example StringIO.open(example) { |io| part2 io }, 70
 
-p part1 File.open('03.txt')
-p part2 File.open('03.txt')
+input = '03.txt'
+puts File.open(input) { |io| part1 io }
+puts File.open(input) { |io| part2 io }

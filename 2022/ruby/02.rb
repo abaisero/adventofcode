@@ -2,86 +2,74 @@
 # frozen_string_literal: true
 
 require 'stringio'
-require 'test/unit/assertions'
-include Test::Unit::Assertions
+require_relative 'test'
 
 def read_data(io)
   io.each.map { |line| line.split.map(&:to_sym) }
 end
 
-def shape_score(moves)
-  shapescore_hash = { rock: 1, paper: 2, scissors: 3 }
-  moves.map { |_m1, m2| shapescore_hash[m2] }.sum
+def score_shape(_x, y)
+  score_hash = { rock: 1, paper: 2, scissors: 3 }
+  score_hash[y]
 end
 
-def outcome_score(moves)
-  outcomescore_hash = {
-    %i[rock rock] => 3,
-    %i[rock paper] => 6,
-    %i[rock scissors] => 0,
-    %i[paper rock] => 0,
-    %i[paper paper] => 3,
-    %i[paper scissors] => 6,
-    %i[scissors rock] => 6,
-    %i[scissors paper] => 0,
-    %i[scissors scissors] => 3
-  }
-  moves.map(&outcomescore_hash).sum
+def score_outcome(x, y)
+  symbol_to_index = { rock: 0, paper: 1, scissors: 2 }
+  score_matrix = [[3, 6, 0], [0, 3, 6], [6, 0, 3]]
+  score_matrix[symbol_to_index[x]][symbol_to_index[y]]
 end
 
-def score(moves)
-  shape_score(moves) + outcome_score(moves)
+def score(x, y)
+  score_shape(x, y) + score_outcome(x, y)
 end
 
-def convert_strategy_to_moves_1(strategy)
+def convert_strategy_to_moves_part1(strategy)
   conversion_hash = {
-    %i[A X] => %i[rock rock],
-    %i[A Y] => %i[rock paper],
-    %i[A Z] => %i[rock scissors],
-    %i[B X] => %i[paper rock],
-    %i[B Y] => %i[paper paper],
-    %i[B Z] => %i[paper scissors],
-    %i[C X] => %i[scissors rock],
-    %i[C Y] => %i[scissors paper],
-    %i[C Z] => %i[scissors scissors]
+    A: :rock,
+    B: :paper,
+    C: :scissors,
+    X: :rock,
+    Y: :paper,
+    Z: :scissors
   }
-  strategy.map(&conversion_hash)
+  strategy.flatten.map(&conversion_hash).each_slice(2).to_a
 end
 
 def part1(io)
   strategy = read_data io
-  moves = convert_strategy_to_moves_1 strategy
-  score moves
+  moves = convert_strategy_to_moves_part1 strategy
+  moves.map { |x, y| score x, y }.sum
 end
 
-def convert_strategy_to_moves_2(strategy)
-  conversion_hash = {
-    %i[A X] => %i[rock scissors],
-    %i[A Y] => %i[rock rock],
-    %i[A Z] => %i[rock paper],
-    %i[B X] => %i[paper rock],
-    %i[B Y] => %i[paper paper],
-    %i[B Z] => %i[paper scissors],
-    %i[C X] => %i[scissors paper],
-    %i[C Y] => %i[scissors scissors],
-    %i[C Z] => %i[scissors rock]
-  }
-  strategy.map(&conversion_hash)
+def convert_strategy_to_moves_part2(strategy)
+  # convert strategy to categorical moves
+  abc_hash = { A: 0, B: 1, C: 2 }
+  xyz_hash = { X: -1, Y: 0, Z: 1 }
+  moves = strategy.map do |x, y|
+    xnew = abc_hash[x]
+    ynew = abc_hash[x] + xyz_hash[y]
+    [xnew, ynew % 3]
+  end
+
+  # convert categorical moves to symbolic moves
+  symb_hash = { 0 => :rock, 1 => :paper, 2 => :scissors }
+  moves.flatten.map(&symb_hash).each_slice(2).to_a
 end
 
 def part2(io)
   strategy = read_data io
-  moves = convert_strategy_to_moves_2 strategy
-  score moves
+  moves = convert_strategy_to_moves_part2 strategy
+  moves.map { |x, y| score x, y }.sum
 end
 
-example = StringIO.open \
-  "A Y
-B X
-C Z"
-assert_equal part1(example), 15
-example.rewind
-assert_equal part2(example), 12
+example = <<~EXAMPLE
+  A Y
+  B X
+  C Z
+EXAMPLE
+test_example StringIO.open(example) { |io| part1 io }, 15
+test_example StringIO.open(example) { |io| part2 io }, 12
 
-p part1 File.open('02.txt')
-p part2 File.open('02.txt')
+input = '02.txt'
+puts File.open(input) { |io| part1 io }
+puts File.open(input) { |io| part2 io }

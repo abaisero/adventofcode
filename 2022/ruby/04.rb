@@ -2,8 +2,7 @@
 # frozen_string_literal: true
 
 require 'stringio'
-require 'test/unit/assertions'
-include Test::Unit::Assertions
+require_relative 'test'
 
 def read_data(io)
   io.each.map do |line|
@@ -19,7 +18,7 @@ end
 
 def part1(io)
   ranges = read_data io
-  ranges.select { |ranges| full_overlap?(ranges) }.count
+  ranges.count { |x| full_overlap? x }
 end
 
 def partial_overlap?(ranges)
@@ -29,19 +28,20 @@ end
 
 def part2(io)
   ranges = read_data io
-  ranges.select { |ranges| partial_overlap?(ranges) }.count
+  ranges.count { |x| partial_overlap? x }
 end
 
-example = StringIO.open \
-  "2-4,6-8
-2-3,4-5
-5-7,7-9
-2-8,3-7
-6-6,4-6
-2-6,4-8"
-assert_equal part1(example), 2
-example.rewind
-assert_equal part2(example), 4
+example = <<~EXAMPLE
+  2-4,6-8
+  2-3,4-5
+  5-7,7-9
+  2-8,3-7
+  6-6,4-6
+  2-6,4-8
+EXAMPLE
+test_example StringIO.open(example) { |io| part1 io }, 2
+test_example StringIO.open(example) { |io| part2 io }, 4
 
-p part1 File.open('04.txt')
-p part2 File.open('04.txt')
+input = '04.txt'
+puts File.open(input) { |io| part1 io }
+puts File.open(input) { |io| part2 io }

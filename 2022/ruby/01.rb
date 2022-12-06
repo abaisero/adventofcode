@@ -2,8 +2,7 @@
 # frozen_string_literal: true
 
 require 'stringio'
-require 'test/unit/assertions'
-include Test::Unit::Assertions
+require_relative 'test'
 
 def read_data(io)
   inventories = [[]]
@@ -32,24 +31,25 @@ def part2(io)
   max_k_calories inventories, 3
 end
 
-example = StringIO.open \
-  "1000
-2000
-3000
+example = <<~EXAMPLE
+  1000
+  2000
+  3000
 
-4000
+  4000
 
-5000
-6000
+  5000
+  6000
 
-7000
-8000
-9000
+  7000
+  8000
+  9000
 
-10000"
-assert_equal part1(example), 24_000
-example.rewind
-assert_equal part2(example), 45_000
+  10000
+EXAMPLE
+test_example StringIO.open(example) { |io| part1 io }, 24_000
+test_example StringIO.open(example) { |io| part2 io }, 45_000
 
-p part1 File.open('01.txt')
-p part2 File.open('01.txt')
+input = '01.txt'
+puts File.open(input) { |io| part1 io }
+puts File.open(input) { |io| part2 io }
