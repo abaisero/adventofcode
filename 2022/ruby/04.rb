@@ -42,6 +42,6 @@ EXAMPLE
 test_example StringIO.open(example) { |io| part1 io }, 2
 test_example StringIO.open(example) { |io| part2 io }, 4
 
-input = '04.txt'
+input = "#{File.basename(__FILE__, '.rb')}.txt"
 puts File.open(input) { |io| part1 io }
 puts File.open(input) { |io| part2 io }
