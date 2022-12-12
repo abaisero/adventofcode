@@ -6,8 +6,7 @@ require_relative 'test'
 
 def parse_data(io)
   io.map do |line|
-    match = line.match(/^(\d+)-(\d+),(\d+)-(\d+)$/)
-    match.captures.map(&:to_i).each_slice(2).to_a
+    line.scan(/\d+/).map(&:to_i).each_slice(2).to_a
   end
 end
 

@@ -19,10 +19,6 @@ def compute_priority(item)
   end
 end
 
-def compute_priorities(items)
-  items.map { |item| compute_priority item }
-end
-
 def part1(io)
   rucksacks = parse_data io
   compartments = rucksacks.map { |rucksack| split_rucksack rucksack }

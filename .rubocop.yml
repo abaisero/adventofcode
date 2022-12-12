@@ -5,3 +5,6 @@ AllCops:
 
 Naming/MethodParameterName:
   MinNameLength: 1
+
+Naming/HeredocDelimiterNaming:
+  ForbiddenDelimiters:

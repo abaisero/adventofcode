@@ -18,7 +18,7 @@ end
 def parse_data_stacks(io)
   stacks = {}
   io.each do |line|
-    next if /(\s+\d+)+/.match? line
+    next if line.match?(/(?:\s+\d+)+/)
     break if line.chomp.empty?
 
     parse_data_stacks_line(stacks, line)
@@ -28,8 +28,7 @@ end
 
 def parse_data_movements(io)
   io.map do |line|
-    match = line.match(/^move (\d+) from (\d+) to (\d+)$/)
-    match.captures.map(&:to_i)
+    line.scan(/\d+/).map(&:to_i)
   end
 end
 
