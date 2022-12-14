@@ -5,7 +5,7 @@ require 'stringio'
 require_relative 'test'
 
 def parse_data(io)
-  io.map { |line| line.chomp.each_char.map(&:to_i) }
+  io.map { |line| line.scan(/\d/).map(&:to_i) }
 end
 
 def rotate(matrix, n = 1)

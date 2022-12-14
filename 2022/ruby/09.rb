@@ -3,6 +3,7 @@
 
 require 'set'
 require 'stringio'
+require_relative 'linalgtools'
 require_relative 'test'
 
 def parse_data(io)
@@ -35,10 +36,6 @@ def move_rope_head(head, direction)
   head
 end
 
-def inf_norm(array1, array2)
-  array1.zip(array2).map { |x, y| (x - y).abs }.max
-end
-
 def move_rope_knot(knot, knot_ahead)
   knot = knot.zip(knot_ahead).map { |x, y| step x, y } if inf_norm(knot, knot_ahead) > 1
   knot
@@ -59,7 +56,7 @@ def count_tail_positions(movements, num_knots)
   movements.each do |direction, num_steps|
     num_steps.times do
       rope = move_rope rope, direction
-      tail_positions |= [rope.last]
+      tail_positions << rope.last
     end
   end
   tail_positions.length
