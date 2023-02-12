@@ -1,9 +1,28 @@
 # frozen_string_literal: true
 
-def l1_norm(array1, array2)
-  array1.zip(array2).map { |x, y| (x - y).abs }.sum
-end
+# LinAlg
+module LinAlg
+  def self.add(a, b)
+    a.zip(b).map { |x, y| x + y }
+  end
 
-def inf_norm(array1, array2)
-  array1.zip(array2).map { |x, y| (x - y).abs }.max
+  def self.subtract(a, b)
+    a.zip(b).map { |x, y| x - y }
+  end
+
+  def self.l1_norm(array)
+    array.map(&:abs).sum
+  end
+
+  def self.inf_norm(array)
+    array.map(&:abs).max
+  end
+
+  def self.l1_dist(a, b)
+    l1_norm subtract(a, b)
+  end
+
+  def self.inf_dist(a, b)
+    inf_norm subtract(a, b)
+  end
 end

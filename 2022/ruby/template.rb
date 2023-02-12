@@ -4,23 +4,28 @@
 require 'stringio'
 require_relative 'test'
 
-def parse_data(io)
-  io.map(&:chomp)
+def parse_io_line(line)
+  line
+end
+
+def parse_io(io)
+  lines = io.readlines chomp: true
+  lines.map { |line| parse_io_line line }
 end
 
 def part1(io)
-  parse_data io
+  parse_io io
 end
 
 def part2(io)
-  parse_data io
+  parse_io io
 end
 
 example = <<~EOF
 EOF
-test_example StringIO.open(example) { |io| part1 io }, nil
-test_example StringIO.open(example) { |io| part2 io }, nil
+Test.example StringIO.open(example) { |io| part1 io }, nil
+# Test.example StringIO.open(example) { |io| part2 io }, nil
 
 input = "#{File.basename(__FILE__, '.rb')}.txt"
-puts File.open(input) { |io| part1 io }
-puts File.open(input) { |io| part2 io }
+Test.solution File.open(input) { |io| part1 io }, nil
+# Test.solution File.open(input) { |io| part2 io }, nil

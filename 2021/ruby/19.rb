@@ -1,6 +1,7 @@
 #!/usr/bin/env ruby
 # frozen_string_literal: true
 
+require 'matrix'
 require 'stringio'
 require_relative 'test'
 
@@ -24,20 +25,53 @@ def print_matrix(matrix)
   puts matrix.map(&:inspect)
 end
 
+COSINES = [1, 0, -1, 0].freeze
+SINES = [0, 1, 0, -1].freeze
+ROTATIONS_X = COSINES.zip(SINES).map { |c, s| Matrix[[1, 0, 0], [0, c, -s], [0, s, c]] }
+ROTATIONS_Y = COSINES.zip(SINES).map { |c, s| Matrix[[c, 0, s], [0, 1, 0], [-s, 0, c]] }
+ROTATIONS_Z = COSINES.zip(SINES).map { |c, s| Matrix[[c, -s, 0], [s, c, 0], [0, 0, 1]] }
+ROTATIONS = ROTATIONS_X.product(ROTATIONS_Y, ROTATIONS_Z).map { |rx, ry, rz| rx * ry * rz }.uniq
+
+def canonical(scanner)
+  ones = Matrix.build(scanner.length, 1) { 1 }
+  Matrix.hstack Matrix.rows(scanner), ones
+end
+
+def decanonical(canonical)
+  scanner = canonical * Matrix[[1, 0, 0], [0, 1, 0], [0, 0, 1], [0, 0, 0]]
+  scanner.to_a
+end
+
+def make_transformation(rotation, translation = nil)
+  translation = Vector[0, 0, 0] if translation.nil?
+  Matrix.vstack Matrix.hstack(rotation, translation), Vector[0, 0, 0, 1].covector
+end
+
+def num_shared(scanner1, scanner2)
+  (scanner1 & scanner2).length
+end
+
+def find_transformation(scanner1, scanner2)
+  canonical2 = canonical scanner2
+
+  ROTATIONS.product(scanner1, scanner2).find do |rotation, beacon1, beacon2|
+    translation = Vector.elements(beacon1) - rotation * Vector.elements(beacon2)
+    transformation = make_transformation rotation, translation
+
+    num = num_shared scanner1, decanonical(canonical2 * transformation.transpose)
+    raise if num.zero?
+
+    return num if num >= 12
+    # transformation if num >= 12
+  end
+end
+
 def part1(io)
   scanners = parse_data io
-  # scanner = scanners.first
-  # beacon = scanner.first
-  # pp scanner
-  # pp scanner[1...].map { |b| distance beacon, b }
+  transformation = find_transformation scanners[0], scanners[1]
 
-  beacons = scanners.flat_map(&:itself)
-  dmatrices = scanners.map { |scanner| scanner.map { |b1| scanner.map { |b2| distance b1, b2 } } }
-  pp 'SCANNER 0'
-  print_matrix dmatrices[0]
-  pp 'SCANNER 1'
-  print_matrix dmatrices[1]
-  nil
+  # p scanners.map { |x| scanners.map { |y| p !find_transformation(x, y).nil? } }
+  p scanners.map { |x| scanners.map { |y| p find_transformation(x, y) } }
 end
 
 def part2(io)
@@ -183,9 +217,9 @@ example = <<~EOF
   -652,-548,-490
   30,-46,-14
 EOF
-test_example StringIO.open(example) { |io| part1 io }, nil
-test_example StringIO.open(example) { |io| part2 io }, nil
+test_example StringIO.open(example) { |io| part1 io }, 79
+# test_example StringIO.open(example) { |io| part2 io }, nil
 
 input = "#{File.basename(__FILE__, '.rb')}.txt"
-puts File.open(input) { |io| part1 io }
-puts File.open(input) { |io| part2 io }
+# puts File.open(input) { |io| part1 io }
+# puts File.open(input) { |io| part2 io }

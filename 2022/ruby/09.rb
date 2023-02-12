@@ -6,15 +6,18 @@ require 'stringio'
 require_relative 'linalgtools'
 require_relative 'test'
 
-def parse_data(io)
-  io.map  do |line|
-    line.match(/^([UDLR]) (\d+)$/) do |match|
-      direction = match.captures[0].to_sym
-      num_steps = match.captures[1].to_i
+def parse_io_line(line)
+  line.match(/^([UDLR]) (\d+)$/) do |match|
+    direction = match.captures[0].to_sym
+    num_steps = match.captures[1].to_i
 
-      [direction, num_steps]
-    end
+    [direction, num_steps]
   end
+end
+
+def parse_io(io)
+  lines = io.readlines chomp: true
+  lines.map { |line| parse_io_line line }
 end
 
 def step(x, y)
@@ -26,18 +29,18 @@ def init_rope(num_knots)
 end
 
 def move_rope_head(head, direction)
-  head = head.dup
+  x, y = head
   case direction
-  when :U then head[1] += 1
-  when :D then head[1] -= 1
-  when :L then head[0] -= 1
-  when :R then head[0] += 1
+  when :U then [x, y + 1]
+  when :D then [x, y - 1]
+  when :L then [x - 1, y]
+  when :R then [x + 1, y]
   end
-  head
 end
 
 def move_rope_knot(knot, knot_ahead)
-  knot = knot.zip(knot_ahead).map { |x, y| step x, y } if inf_norm(knot, knot_ahead) > 1
+  move_knot = LinAlg.inf_dist(knot, knot_ahead) > 1
+  knot = knot.zip(knot_ahead).map { |x, y| step x, y } if move_knot
   knot
 end
 
@@ -63,12 +66,12 @@ def count_tail_positions(movements, num_knots)
 end
 
 def part1(io)
-  movements = parse_data io
+  movements = parse_io io
   count_tail_positions movements, 2
 end
 
 def part2(io)
-  movements = parse_data io
+  movements = parse_io io
   count_tail_positions movements, 10
 end
 
@@ -82,8 +85,8 @@ example = <<~EOF
   L 5
   R 2
 EOF
-test_example StringIO.open(example) { |io| part1 io }, 13
-test_example StringIO.open(example) { |io| part2 io }, 1
+Test.example StringIO.open(example) { |io| part1 io }, 13
+Test.example StringIO.open(example) { |io| part2 io }, 1
 
 example = <<~EOF
   U 8
@@ -94,8 +97,8 @@ example = <<~EOF
   L 25
   U 20
 EOF
-test_example StringIO.open(example) { |io| part2 io }, 36
+Test.example StringIO.open(example) { |io| part2 io }, 36
 
 input = "#{File.basename(__FILE__, '.rb')}.txt"
-puts File.open(input) { |io| part1 io }
-puts File.open(input) { |io| part2 io }
+Test.solution File.open(input) { |io| part1 io }, 6256
+Test.solution File.open(input) { |io| part2 io }, 2665

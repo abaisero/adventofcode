@@ -4,18 +4,22 @@
 require 'stringio'
 require_relative 'test'
 
-def process_line(line, x)
+def process_line(line, lastx)
   case line
-  when /^noop$/ then [x]
-  when /^addx -?\d+$/ then addx = line.split.last.to_i
-                           [x, x + addx]
+  when /^noop$/
+    [lastx]
+  when /^addx (-?\d+)$/
+    addx = Regexp.last_match(1).to_i
+    [lastx, lastx + addx]
   end
 end
 
-def parse_data(io)
+def parse_io(io)
+  lines = io.readlines chomp: true
+
   values = [1]
-  io.each do |line|
-    values.push(*process_line(line, values.last))
+  lines.each do |line|
+    values += process_line(line, values.last)
   end
   values
 end
@@ -25,7 +29,7 @@ def signal_strengths(values)
 end
 
 def part1(io)
-  values = parse_data io
+  values = parse_io io
   values.pop
   signal_strengths values
 end
@@ -33,7 +37,7 @@ end
 CRTW = 40
 
 def part2(io)
-  values = parse_data io
+  values = parse_io io
   values.pop
   indices = (0...CRTW)
   pixels = values.zip(indices.cycle).map { |value, i| (value - i).abs <= 1 ? '#' : '.' }
@@ -188,7 +192,7 @@ example = <<~EOF
   noop
   noop
 EOF
-test_example StringIO.open(example) { |io| part1 io }, 13_140
+Test.example StringIO.open(example) { |io| part1 io }, 13_140
 expected = <<~EOF
   ##..##..##..##..##..##..##..##..##..##..
   ###...###...###...###...###...###...###.
@@ -197,8 +201,8 @@ expected = <<~EOF
   ######......######......######......####
   #######.......#######.......#######.....
 EOF
-test_example StringIO.open(example) { |io| part2 io }, expected.chomp
+Test.example StringIO.open(example) { |io| part2 io }, expected.chomp
 
 input = "#{File.basename(__FILE__, '.rb')}.txt"
-puts File.open(input) { |io| part1 io }
-puts File.open(input) { |io| part2 io }
+Test.solution File.open(input) { |io| part1 io }, 13_180
+Test.solution File.open(input) { |io| part2 io }  # EZFCHJAB

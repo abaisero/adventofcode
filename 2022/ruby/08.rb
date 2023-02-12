@@ -4,83 +4,63 @@
 require 'stringio'
 require_relative 'test'
 
-def parse_data(io)
-  io.map { |line| line.scan(/\d/).map(&:to_i) }
+def parse_io_line(line)
+  line.chars.map(&:to_i)
 end
 
-def rotate(matrix, n = 1)
-  case n % 4
-  when 0 then matrix
-  when 1 then matrix.transpose.map(&:reverse)
-  when 2 then matrix.reverse.map(&:reverse)
-  when 3 then matrix.transpose.reverse
-  end
+def parse_io(io)
+  lines = io.readlines chomp: true
+  lines.map { |line| parse_io_line line }
 end
 
 def visible_horizontal(trees)
   trees.map.with_index do |tree, i|
-    i.zero? or # first
-      trees[...i].max < tree or # higher than trees before
-      i == trees.length - 1 or # last
+    i.zero? || # first
+      trees[...i].max < tree || # higher than trees before
+      i == trees.length - 1 || # last
       tree > trees[i + 1...].max # higher than trees after
   end
 end
 
-def visible(trees)
-  num_cols = trees.first.length
-
+def visible_flat(trees)
   visible_h = trees.map { |row| visible_horizontal row }
   visible_v = trees.transpose.map { |row| visible_horizontal row }.transpose
 
-  visible_flat = visible_h.flatten.zip(visible_v.flatten).map { |vh, vv| vh or vv }
-  visible_flat.each_slice(num_cols).to_a
-end
-
-def count_true(nested_array)
-  nested_array.flatten.count(&:itself)
+  visible_h.flatten.zip(visible_v.flatten).map { |vh, vv| vh or vv }
 end
 
 def part1(io)
-  trees = parse_data io
-  count_true visible(trees)
+  trees = parse_io io
+  visible_flat(trees).count(&:itself)
 end
 
-def score_left_right(row)
-  indices = (0...row.length)
+def score_tree_direction(height, trees)
+  # index of first blocking tree
+  index = trees.index { |tree| tree >= height }
+  index.nil? ? trees.length : index + 1
+end
 
-  visible_left = Array.new(row.length, 0)
-  indices.each do |i|
-    next if i == 0
-
-    visible_left[i] = i.times.map do |j|
-      f, *rest, t = row[j..i]
-      m = rest.max
-
-      if m.nil?
-        1
-      elsif m >= t
-        -1
-      else
-        i - j
-      end
-    end.max
+def score_row_right(trees)
+  trees.each_index.map do |i|
+    score_tree_direction trees[i], trees[i + 1...]
   end
-  visible_left
 end
 
-def score_horizontal(row)
-  vleft = score_left_right(row)
-  vright = score_left_right(row.reverse).reverse
+def score_trees(trees)
+  scores_r = trees.map { |row| score_row_right row }
+  scores_l = trees.map { |row| score_row_right(row.reverse).reverse }
+  scores_u = trees.transpose.map { |row| score_row_right(row.reverse).reverse }.transpose
+  scores_d = trees.transpose.map { |row| score_row_right row }.transpose
 
-  vleft.zip(vright).map { |l, r| l * r }
+  flat_scores = scores_r.flatten.zip(scores_l.flatten, scores_u.flatten, scores_d.flatten)
+  flat_scores = flat_scores.map { |rlud| rlud.reduce :* }
+  flat_scores.each_slice(trees.first.length).to_a
 end
 
 def part2(io)
-  trees = parse_data io
-
-  slr = trees.map { |row| score_horizontal(row) }
-  srb = trees.transpose.map { |row| score_horizontal(row) }.transpose
-  slr.flatten.zip(srb.flatten).map { |l, r| l * r }.max
+  trees = parse_io io
+  scores = score_trees trees
+  scores.map(&:max).max
 end
 
 example = <<~EOF
@@ -90,9 +70,9 @@ example = <<~EOF
   33549
   35390
 EOF
-test_example StringIO.open(example) { |io| part1 io }, 21
-test_example StringIO.open(example) { |io| part2 io }, 8
+Test.example StringIO.open(example) { |io| part1 io }, 21
+Test.example StringIO.open(example) { |io| part2 io }, 8
 
 input = "#{File.basename(__FILE__, '.rb')}.txt"
-puts File.open(input) { |io| part1 io }
-puts File.open(input) { |io| part2 io }
+Test.solution File.open(input) { |io| part1 io }, 1681
+Test.solution File.open(input) { |io| part2 io }, 201_684

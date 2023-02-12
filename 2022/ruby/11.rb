@@ -4,29 +4,35 @@
 require 'stringio'
 require_relative 'test'
 
-def parse_data(io)
+def parse_io_line(line, monkeys)
+  case line
+  when /^\s*Monkey \d+:$/
+    monkeys << { inspections: 0 }
+  when /^\s*Starting items: (\d+(?:, \d+)*)$/
+    monkeys.last[:items] = Regexp.last_match(1).scan(/\d+/).map(&:to_i)
+  when /^\s*Operation: new = old \* old$/
+    monkeys.last[:operation] = ->(old) { old * old }
+  when /^\s*Operation: new = old \* (\d+)$/
+    capture = Regexp.last_match(1).to_i
+    monkeys.last[:operation] = ->(old) { old * capture }
+  when /^\s*Operation: new = old \+ (\d+)$/
+    capture = Regexp.last_match(1).to_i
+    monkeys.last[:operation] = ->(old) { old + capture }
+  when /^\s*Test: divisible by (\d+)$/
+    monkeys.last[:test_value] = Regexp.last_match(1).to_i
+  when /^\s*If true: throw to monkey (\d+)$/
+    monkeys.last[[:test_result, true]] = Regexp.last_match(1).to_i
+  when /^\s*If false: throw to monkey (\d+)$/
+    monkeys.last[[:test_result, false]] = Regexp.last_match(1).to_i
+  end
+end
+
+def parse_io(io)
+  lines = io.readlines chomp: true
+
   monkeys = []
-  io.map(&:strip).each do |line|
-    case line
-    when /^Monkey \d+:$/
-      monkeys << { inspections: 0 }
-    when /^Starting items: (\d+(?:, \d+)*)$/
-      monkeys.last[:items] = Regexp.last_match(1).scan(/\d+/).map(&:to_i)
-    when /^Operation: new = old \* old$/
-      monkeys.last[:operation] = ->(old) { old * old }
-    when /^Operation: new = old \* (\d+)$/
-      capture = Regexp.last_match(1).to_i
-      monkeys.last[:operation] = ->(old) { old * capture }
-    when /^Operation: new = old \+ (\d+)$/
-      capture = Regexp.last_match(1).to_i
-      monkeys.last[:operation] = ->(old) { old + capture }
-    when /^Test: divisible by (\d+)$/
-      monkeys.last[:test_value] = Regexp.last_match(1).to_i
-    when /^If true: throw to monkey (\d+)$/
-      monkeys.last[[:test_result, true]] = Regexp.last_match(1).to_i
-    when /^If false: throw to monkey (\d+)$/
-      monkeys.last[[:test_result, false]] = Regexp.last_match(1).to_i
-    end
+  lines.each do |line|
+    parse_io_line line, monkeys
   end
   monkeys
 end
@@ -37,7 +43,7 @@ def process_item(monkeys, monkey, item, postoperation)
   item = monkey[:operation].call item
   item = postoperation.call item
 
-  test = item % monkey[:test_value] == 0
+  test = (item % monkey[:test_value]).zero?
   next_monkey_id = monkey[[:test_result, test]]
   next_monkey = monkeys[next_monkey_id]
   next_monkey[:items] << item
@@ -57,12 +63,12 @@ def process_round(monkeys, postoperation)
 end
 
 def monkey_business(monkeys)
-  *, x, y = monkeys.map { |monkey| monkey[:inspections] }.sort
-  x * y
+  inspections = monkeys.map { |monkey| monkey[:inspections] }
+  inspections.max(2).reduce(:*)
 end
 
 def part1(io)
-  monkeys = parse_data io
+  monkeys = parse_io io
   postoperation = ->(item) { item / 3 }
   20.times do
     process_round monkeys, postoperation
@@ -71,8 +77,8 @@ def part1(io)
 end
 
 def part2(io)
-  monkeys = parse_data io
-  test_value_lcm = monkeys.map { |monkey| monkey[:test_value] }.reduce(1, :lcm)
+  monkeys = parse_io io
+  test_value_lcm = monkeys.map { |monkey| monkey[:test_value] }.reduce(:lcm)
   postoperation = ->(item) { item % test_value_lcm }
   10_000.times do
     process_round monkeys, postoperation
@@ -109,9 +115,9 @@ example = <<~EOF
       If true: throw to monkey 0
       If false: throw to monkey 1
 EOF
-test_example StringIO.open(example) { |io| part1 io }, 10_605
-test_example StringIO.open(example) { |io| part2 io }, 2_713_310_158
+Test.example StringIO.open(example) { |io| part1 io }, 10_605
+Test.example StringIO.open(example) { |io| part2 io }, 2_713_310_158
 
 input = "#{File.basename(__FILE__, '.rb')}.txt"
-puts File.open(input) { |io| part1 io }
-puts File.open(input) { |io| part2 io }
+Test.solution File.open(input) { |io| part1 io }, 58_786
+Test.solution File.open(input) { |io| part2 io }, 14_952_185_856
