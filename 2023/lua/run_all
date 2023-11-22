@@ -1,0 +1,8 @@
+#!/bin/bash
+
+for filename in $(find . -name '[0-9][0-9].lua' | sort); do
+  echo "==============="
+  echo "running $filename"
+  echo "==============="
+  $filename
+done
