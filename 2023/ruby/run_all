@@ -1,0 +1,10 @@
+#!/bin/bash
+
+for filename in $(find . -name '[0-9][0-9].rb' | sort); do
+  echo "==============="
+  echo "running $filename"
+  echo "==============="
+  $filename
+done
+
+exit 0
